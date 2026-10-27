@@ -1,29 +1,32 @@
 /**
  * 菜单路由配置中心
- * 后续新增 Cesium 案例时，只需在此数组中添加一项，并在 src/views/cesium/ 创建对应的 .vue 页面即可
+ * 目录规范：
+ * - 一级目录对应 src/views/cesium/<一级目录>/（component: 'Layout'）
+ * - 若存在二级分类目录（包含三级子菜单），中间层路由设置 component: 'ParentView'
+ * - 最终示例页面统一命名为对应目录下的 index.vue，例如 component: 'cesium/simple/globe-color/index'
  */
 export const menuRoutes = [
   {
-    name: 'Cesium',
-    path: '/cesium',
+    name: 'SimpleExample',
+    path: '/simple',
     hidden: false,
     redirect: 'noRedirect',
     component: 'Layout',
     alwaysShow: true,
     meta: {
-      title: 'Cesium 案例',
+      title: '简单示例',
       icon: 'guide',
       noCache: false,
       link: null
     },
     children: [
       {
-        name: 'CesiumDemo1',
-        path: 'demo1',
+        name: 'GlobeColor',
+        path: 'globe-color',
         hidden: false,
-        component: 'cesium/demo1/index',
+        component: 'cesium/simple/globe-color/index',
         meta: {
-          title: '地球基础展示',
+          title: '更改地球颜色',
           icon: 'international',
           noCache: false,
           link: null

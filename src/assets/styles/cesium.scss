@@ -1,0 +1,8 @@
+/**
+ * Cesium 视图公共样式（隐藏左下角版权 Logo 等）
+ * 在需要使用的页面通过 @import "@/assets/styles/cesium.scss"; 引入
+ */
+:deep(.cesium-viewer-bottom),
+.cesium-viewer-bottom {
+  display: none !important;
+}
