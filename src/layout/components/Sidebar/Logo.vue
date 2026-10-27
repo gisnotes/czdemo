@@ -75,10 +75,11 @@ const getLogoTextColor = computed(() => {
     width: 100%;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      width: 38px;
+      height: 38px;
       vertical-align: middle;
-      margin-right: 12px;
+      margin-right: 10px;
+      object-fit: contain;
     }
 
     & .sidebar-title {
@@ -87,7 +88,8 @@ const getLogoTextColor = computed(() => {
       color: v-bind(getLogoTextColor);
       font-weight: 600;
       line-height: 50px;
-      font-size: 14px;
+      font-size: 16px;
+      letter-spacing: 0.5px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

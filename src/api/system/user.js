@@ -77,7 +77,7 @@ export function getUserProfile() {
     data: {
       userId: 1,
       userName: 'admin',
-      nickName: 'Cesium 开发者',
+      nickName: '不如吃茶去',
       email: 'admin@cesium.dev',
       phonenumber: '15888888888',
       sex: '1',

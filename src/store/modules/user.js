@@ -1,11 +1,10 @@
 import router from '@/router'
 import cache from '@/plugins/cache'
-import { ElMessageBox, } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { isHttp, isEmpty } from "@/utils/validate"
-import useLockStore from '@/store/modules/lock'
-import defAva from '@/assets/images/profile.jpg'
+import defAva from '@/assets/logo/avatar.png'
 
 const useUserStore = defineStore(
   'user',
@@ -13,9 +12,9 @@ const useUserStore = defineStore(
     state: () => ({
       token: getToken(),
       id: '',
-      name: '',
-      nickName: '',
-      avatar: '',
+      name: 'admin',
+      nickName: '不如吃茶去',
+      avatar: defAva,
       roles: [],
       permissions: []
     }),
@@ -30,7 +29,6 @@ const useUserStore = defineStore(
           login(username, password, code, uuid).then(res => {
             setToken(res.token)
             this.token = res.token
-            useLockStore().unlockScreen()
             resolve()
           }).catch(error => {
             reject(error)
@@ -44,7 +42,7 @@ const useUserStore = defineStore(
             const user = res.user
             let avatar = user.avatar || ""
             if (!isHttp(avatar)) {
-              avatar = (isEmpty(avatar)) ? defAva : import.meta.env.VITE_APP_BASE_API + avatar
+              avatar = (isEmpty(avatar)) ? defAva : avatar
             }
             if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
               this.roles = res.roles
@@ -54,7 +52,7 @@ const useUserStore = defineStore(
             }
             this.id = user.userId
             this.name = user.userName
-            this.nickName = user.nickName
+            this.nickName = user.nickName || '不如吃茶去'
             this.avatar = avatar
             cache.session.set('pwrChrtype', res.pwdChrtype)
             /* 初始密码提示 */

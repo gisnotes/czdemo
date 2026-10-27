@@ -4,7 +4,6 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { isHttp } from '@/utils/validate'
 import useUserStore from '@/store/modules/user'
-import useLockStore from '@/store/modules/lock'
 import useSettingsStore from '@/store/modules/settings'
 import usePermissionStore from '@/store/modules/permission'
 
@@ -20,16 +19,6 @@ router.beforeEach(async (to, from) => {
   }
 
   to.meta.title && useSettingsStore().setTitle(to.meta.title)
-  const isLock = useLockStore().isLock
-
-  if (isLock && to.path !== '/lock') {
-    NProgress.done()
-    return { path: '/lock' }
-  }
-  if (!isLock && to.path === '/lock') {
-    NProgress.done()
-    return { path: '/' }
-  }
 
   // 若尚未加载用户权限与动态路由，则自动初始化
   if (useUserStore().roles.length === 0) {

@@ -58,7 +58,7 @@ onMounted(() => {
           <el-timeline-item timestamp="步骤 3" placement="top" type="warning">
             <el-card>
               <h4>新增更多案例</h4>
-              <p>在 <code>src/mock/menuData.js</code> 中追加案例菜单，并在 <code>src/views/cesium/</code> 新建对应组件即可。</p>
+              <p>在 <code>src/menu/index.js</code> 中追加案例菜单，并在 <code>src/views/cesium/</code> 新建对应组件即可。</p>
             </el-card>
           </el-timeline-item>
         </el-timeline>

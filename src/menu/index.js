@@ -1,6 +1,8 @@
-// 纯前端模式 - 动态路由与菜单配置
-// 如需添加新的 Cesium 案例：在此数组中添加一项，并在 src/views/cesium/ 创建对应的 .vue 文件即可
-export const mockRoutes = [
+/**
+ * 菜单路由配置中心
+ * 后续新增 Cesium 案例时，只需在此数组中添加一项，并在 src/views/cesium/ 创建对应的 .vue 页面即可
+ */
+export const menuRoutes = [
   {
     name: 'Cesium',
     path: '/cesium',
@@ -30,3 +32,5 @@ export const mockRoutes = [
     ]
   }
 ]
+
+export default menuRoutes
