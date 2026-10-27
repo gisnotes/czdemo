@@ -70,44 +70,37 @@ export function changeUserStatus(userId, status) {
   })
 }
 
-// 查询用户个人信息
+// 查询用户个人信息（纯前端模拟）
 export function getUserProfile() {
-  return request({
-    url: '/system/user/profile',
-    method: 'get'
+  return Promise.resolve({
+    code: 200,
+    data: {
+      userId: 1,
+      userName: 'admin',
+      nickName: 'Cesium 开发者',
+      email: 'admin@cesium.dev',
+      phonenumber: '15888888888',
+      sex: '1',
+      createTime: '2026-10-27 10:00:00'
+    },
+    roleGroup: '超级管理员',
+    postGroup: 'Cesium 开发工程师'
   })
 }
 
 // 修改用户个人信息
 export function updateUserProfile(data) {
-  return request({
-    url: '/system/user/profile',
-    method: 'put',
-    data: data
-  })
+  return Promise.resolve({ code: 200, msg: '修改成功' })
 }
 
 // 用户密码重置
 export function updateUserPwd(oldPassword, newPassword) {
-  const data = {
-    oldPassword,
-    newPassword
-  }
-  return request({
-    url: '/system/user/profile/updatePwd',
-    method: 'put',
-    data: data
-  })
+  return Promise.resolve({ code: 200, msg: '修改成功' })
 }
 
 // 用户头像上传
 export function uploadAvatar(data) {
-  return request({
-    url: '/system/user/profile/avatar',
-    method: 'post',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    data: data
-  })
+  return Promise.resolve({ code: 200, imgUrl: '' })
 }
 
 // 查询授权角色

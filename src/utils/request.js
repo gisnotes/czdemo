@@ -112,7 +112,9 @@ service.interceptors.response.use(res => {
     console.log('err' + error)
     let { message } = error
     if (message == "Network Error") {
-      message = "后端接口连接异常"
+      // 纯前端模式下无后台服务，静默返回兜底数据避免阻断页面
+      console.warn('[纯前端模式] 未连接后端，已忽略请求:', error.config?.url)
+      return Promise.resolve({ code: 200, data: {}, rows: [], total: 0, msg: '纯前端模拟' })
     } else if (message.includes("timeout")) {
       message = "系统接口请求超时"
     } else if (message.includes("Request failed with status code")) {

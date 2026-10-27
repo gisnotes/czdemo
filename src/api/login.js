@@ -1,69 +1,40 @@
-import request from '@/utils/request'
+import {
+  mockLogin,
+  mockGetInfo,
+  mockLogout,
+  mockGetCodeImg,
+  mockUnlockScreen
+} from '@/mock'
 
-// 登录方法
+// 登录方法（纯前端本地登录）
 export function login(username, password, code, uuid) {
-  const data = {
-    username,
-    password,
-    code,
-    uuid
-  }
-  return request({
-    url: '/login',
-    headers: {
-      isToken: false,
-      repeatSubmit: false
-    },
-    method: 'post',
-    data: data
-  })
+  return mockLogin(username, password)
 }
 
 // 注册方法
 export function register(data) {
-  return request({
-    url: '/register',
-    headers: {
-      isToken: false
-    },
-    method: 'post',
-    data: data
+  return Promise.resolve({
+    code: 200,
+    msg: '注册成功'
   })
 }
 
-// 获取用户详细信息
+// 获取用户详细信息（纯前端直接返回用户信息与超管权限）
 export function getInfo() {
-  return request({
-    url: '/getInfo',
-    method: 'get'
-  })
+  return mockGetInfo()
 }
 
 // 解锁屏幕
 export function unlockScreen(password) {
-  return request({
-    url: '/unlockscreen',
-    method: 'post',
-    data: { password }
-  })
+  return mockUnlockScreen(password)
 }
 
 // 退出方法
 export function logout() {
-  return request({
-    url: '/logout',
-    method: 'post'
-  })
+  return mockLogout()
 }
 
-// 获取验证码
+// 获取验证码（纯前端禁用验证码）
 export function getCodeImg() {
-  return request({
-    url: '/captchaImage',
-    headers: {
-      isToken: false
-    },
-    method: 'get',
-    timeout: 20000
-  })
+  return mockGetCodeImg()
 }

@@ -1,9 +1,6 @@
-import request from '@/utils/request'
+import { mockGetRouters } from '@/mock'
 
-// 获取路由
+// 获取路由（纯前端模式由本地路由配置生成）
 export const getRouters = () => {
-  return request({
-    url: '/getRouters',
-    method: 'get'
-  })
+  return mockGetRouters()
 }

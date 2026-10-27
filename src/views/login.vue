@@ -81,21 +81,20 @@ const { proxy } = getCurrentInstance()
 const loginForm = ref({
   username: "admin",
   password: "admin123",
-  rememberMe: false,
+  rememberMe: true,
   code: "",
   uuid: ""
 })
 
 const loginRules = {
   username: [{ required: true, trigger: "blur", message: "请输入您的账号" }],
-  password: [{ required: true, trigger: "blur", message: "请输入您的密码" }],
-  code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+  password: [{ required: true, trigger: "blur", message: "请输入您的密码" }]
 }
 
 const codeUrl = ref("")
 const loading = ref(false)
-// 验证码开关
-const captchaEnabled = ref(true)
+// 验证码开关（纯前端模式默认关闭）
+const captchaEnabled = ref(false)
 // 注册开关
 const register = ref(false)
 const redirect = ref(undefined)
@@ -142,11 +141,13 @@ function handleLogin() {
 
 function getCode() {
   getCodeImg().then(res => {
-    captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled
+    captchaEnabled.value = res.captchaEnabled === undefined ? false : res.captchaEnabled
     if (captchaEnabled.value) {
       codeUrl.value = "data:image/gif;base64," + res.img
       loginForm.value.uuid = res.uuid
     }
+  }).catch(() => {
+    captchaEnabled.value = false
   })
 }
 
@@ -157,7 +158,7 @@ function getCookie() {
   loginForm.value = {
     username: username === undefined ? loginForm.value.username : username,
     password: password === undefined ? loginForm.value.password : decrypt(password),
-    rememberMe: rememberMe === undefined ? false : Boolean(rememberMe)
+    rememberMe: rememberMe === undefined ? true : Boolean(rememberMe)
   }
 }
 
