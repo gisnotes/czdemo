@@ -62,16 +62,32 @@ const markedInstance = new Marked({
       } catch (e) {
         highlighted = text;
       }
-      const langLabel = validLang ? `<span class="code-lang">${validLang}</span>` : "";
+      const langLabel = validLang
+        ? `<span class="code-lang">${validLang}</span>`
+        : "";
       return `<pre class="md-code-block">${langLabel}<code class="hljs">${highlighted}</code></pre>`;
     },
   },
 });
 
+/**
+ * 修正 CommonMark 在中文环境下当 ** 紧贴中文标点（如 （）、“”、``）与汉字时无法识别加粗的问题
+ */
+function fixCjkBold(html) {
+  return html
+    .split(/(<pre[\s\S]*?<\/pre>)/gi)
+    .map((segment) => {
+      if (segment.startsWith("<pre")) return segment;
+      return segment.replace(/\*\*(?!\s)([^\n*]+?)(?<!\s)\*\*/g, "<strong>$1</strong>");
+    })
+    .join("");
+}
+
 const renderedHtml = computed(() => {
   if (!props.rawCode) return "";
   try {
-    return markedInstance.parse(props.rawCode);
+    const rawHtml = markedInstance.parse(props.rawCode);
+    return fixCjkBold(rawHtml);
   } catch (e) {
     return `<pre>${props.rawCode}</pre>`;
   }
@@ -180,6 +196,11 @@ $code-bg: #16181d;
     font-size: 14px;
     line-height: 1.7;
     word-wrap: break-word;
+
+    :deep(strong) {
+      color: #ffffff;
+      font-weight: 700;
+    }
 
     :deep(h1),
     :deep(h2),
@@ -308,4 +329,3 @@ $code-bg: #16181d;
   }
 }
 </style>
-

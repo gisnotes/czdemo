@@ -2,14 +2,14 @@
   <div class="demo-box">
     <el-splitter>
       <!-- 左侧 Cesium 预览区域 (70%) -->
-      <el-splitter-panel :size="70" :min="minWidth">
+      <el-splitter-panel :size="70" collapsible>
         <div class="preview-container">
           <slot :blocks="resolvedBlocks"></slot>
         </div>
       </el-splitter-panel>
 
       <!-- 右侧代码/文档展示区域 (30%)：自动识别代码块或 Markdown 文档 -->
-      <el-splitter-panel :size="30" :min="minWidth">
+      <el-splitter-panel :size="30" collapsible>
         <!-- 只有一个展示块时，直接占满右侧区域 -->
         <component
           v-if="resolvedBlocks.length === 1"
@@ -17,13 +17,13 @@
           v-bind="resolvedBlocks[0]"
         />
 
-        <!-- 多个展示块时垂直平铺分割：主界面占 55%（若含文档）或 75%，其余平分剩余空间 -->
+        <!-- 多个展示块时垂直平铺分割：主界面占 50%（若含文档）或 75%，其余平分剩余空间 -->
         <el-splitter
           v-else-if="resolvedBlocks.length > 1"
           layout="vertical"
           class="code-vertical-splitter"
         >
-          <el-splitter-panel :size="primarySize" :min="10">
+          <el-splitter-panel :size="primarySize" collapsible>
             <component
               :is="getViewerComponent(resolvedBlocks[0])"
               v-bind="resolvedBlocks[0]"
@@ -34,7 +34,7 @@
             v-for="(block, index) in restBlocks"
             :key="block.fileName || index"
             :size="restSize"
-            :min="5"
+            collapsible
           >
             <component :is="getViewerComponent(block)" v-bind="block" />
           </el-splitter-panel>
@@ -76,7 +76,6 @@ const props = defineProps({
   },
 });
 
-const minWidth = "75px";
 const route = useRoute();
 
 // 支持子组件或页面通过 inject('demoBox') 动态注册额外代码块
@@ -298,11 +297,22 @@ $border-color: #ddd;
   position: relative;
 }
 
-/* 解决水平 el-splitter 在首次挂载阶段 ResizeObserver 尚未触发、flex-basis 为 0px 导致 Cesium 初始化时容器宽度为 0 的问题 */
-:deep(.el-splitter:not(.code-vertical-splitter) > .el-splitter-panel:first-of-type[style*="flex-basis: 0px"]) {
-  flex-basis: 70% !important;
+/* 提升分割条与折叠按钮层级，避免被 CodeBox / MarkdownBox 顶部的 .mac-header (z-index: 10) 遮挡 */
+:deep(.el-splitter-bar) {
+  z-index: 20;
 }
-:deep(.el-splitter:not(.code-vertical-splitter) > .el-splitter-panel:last-of-type[style*="flex-basis: 0px"]) {
-  flex-basis: 30% !important;
+
+:deep(.el-splitter-bar__collapse-icon) {
+  z-index: 21;
+}
+
+/* 解决水平 el-splitter 在首次挂载阶段 ResizeObserver 尚未触发、两侧面板同时为 flex-basis: 0px 导致 Cesium 初始化时容器宽度为 0 的问题（同时不影响单个面板 collapsible 折叠为 0px） */
+:deep(.el-splitter:not(.code-vertical-splitter):has(> .el-splitter-panel:first-of-type[style*="flex-basis: 0px"]):has(> .el-splitter-panel:last-of-type[style*="flex-basis: 0px"])) {
+  > .el-splitter-panel:first-of-type {
+    flex-basis: 70% !important;
+  }
+  > .el-splitter-panel:last-of-type {
+    flex-basis: 30% !important;
+  }
 }
 </style>
