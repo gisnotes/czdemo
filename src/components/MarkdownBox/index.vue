@@ -1,6 +1,6 @@
 <template>
   <div class="markdown-box">
-    <!-- 顶部 Mac 风格状态栏（与 CodeBox 保持视觉统一） -->
+    <!-- 顶部状态栏 -->
     <div class="mac-header">
       <div class="dots">
         <span class="mac-dot red"></span>
@@ -78,7 +78,10 @@ function fixCjkBold(html) {
     .split(/(<pre[\s\S]*?<\/pre>)/gi)
     .map((segment) => {
       if (segment.startsWith("<pre")) return segment;
-      return segment.replace(/\*\*(?!\s)([^\n*]+?)(?<!\s)\*\*/g, "<strong>$1</strong>");
+      return segment.replace(
+        /\*\*(?!\s)([^\n*]+?)(?<!\s)\*\*/g,
+        "<strong>$1</strong>"
+      );
     })
     .join("");
 }
@@ -95,24 +98,23 @@ const renderedHtml = computed(() => {
 </script>
 
 <style scoped lang="scss">
-$bg-color: #1e1e1e;
-$header-bg: #2d2d2d;
-$border-color: #333;
-$text-color: #d4d4d4;
-$heading-color: #ffffff;
-$muted-color: #9da5b4;
-$code-bg: #16181d;
+$header-bg: #f1f5f9;
+$border-color: #e2e8f0;
+$text-color: #334155;
+$heading-color: #0f172a;
+$muted-color: #475569;
+$code-bg: #1e222a;
 
 .markdown-box {
   height: 100%;
-  background-color: $bg-color;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f1f5f9 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
   & ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   & ::-webkit-scrollbar-track {
@@ -120,25 +122,21 @@ $code-bg: #16181d;
   }
 
   & ::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 5px;
-    border: 2px solid $bg-color;
+    background: #cbd5e1;
+    border-radius: 4px;
     &:hover {
-      background: #555;
+      background: #94a3b8;
     }
   }
 
-  & ::-webkit-scrollbar-corner {
-    background-color: transparent;
-  }
-
   .mac-header {
-    height: 32px;
+    height: 36px;
     flex-shrink: 0;
     background: $header-bg;
+    border-bottom: 1px solid $border-color;
     display: flex;
     align-items: center;
-    padding: 0 15px;
+    padding: 0 16px;
     z-index: 10;
     position: relative;
 
@@ -167,10 +165,10 @@ $code-bg: #16181d;
 
     .file-name {
       flex: 1;
-      margin-left: 5px;
-      color: #858585;
+      margin-left: 6px;
+      color: #64748b;
       font-size: 12px;
-      font-family: monospace;
+      font-family: Consolas, Monaco, monospace;
     }
 
     .header-actions {
@@ -178,9 +176,8 @@ $code-bg: #16181d;
       top: 50%;
       transform: translateY(-50%);
       right: 0;
-      padding: 0 10px;
+      padding: 0 12px;
       z-index: 10;
-      background-color: $header-bg;
     }
   }
 
@@ -188,17 +185,24 @@ $code-bg: #16181d;
     flex: 1;
     overflow: auto;
     min-height: 0;
-    padding: 18px 22px 28px;
+    padding: 24px 32px 40px;
   }
 
   .markdown-body {
+    max-width: 960px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid $border-color;
+    border-radius: 10px;
+    padding: 28px 36px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
     color: $text-color;
     font-size: 14px;
-    line-height: 1.7;
+    line-height: 1.75;
     word-wrap: break-word;
 
     :deep(strong) {
-      color: #ffffff;
+      color: #0f172a;
       font-weight: 700;
     }
 
@@ -208,80 +212,81 @@ $code-bg: #16181d;
     :deep(h4) {
       color: $heading-color;
       font-weight: 600;
-      margin: 1.2em 0 0.6em;
+      margin: 1.3em 0 0.65em;
       line-height: 1.35;
     }
 
     :deep(h1) {
-      font-size: 1.45em;
+      font-size: 1.55em;
       margin-top: 0;
-      padding-bottom: 0.4em;
-      border-bottom: 1px solid $border-color;
+      padding-bottom: 0.45em;
+      border-bottom: 2px solid $border-color;
     }
 
     :deep(h2) {
-      font-size: 1.2em;
-      padding-bottom: 0.3em;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 1.25em;
+      padding-bottom: 0.35em;
+      border-bottom: 1px solid $border-color;
     }
 
     :deep(h3) {
-      font-size: 1.05em;
+      font-size: 1.08em;
     }
 
     :deep(p) {
-      margin: 0.6em 0;
+      margin: 0.65em 0;
     }
 
     :deep(ul),
     :deep(ol) {
       padding-left: 1.5em;
-      margin: 0.5em 0;
+      margin: 0.55em 0;
     }
 
     :deep(li) {
-      margin: 0.25em 0;
+      margin: 0.3em 0;
     }
 
     :deep(hr) {
       border: 0;
       border-top: 1px solid $border-color;
-      margin: 1.2em 0;
+      margin: 1.4em 0;
     }
 
     :deep(blockquote) {
-      margin: 0.8em 0;
-      padding: 0.4em 1em;
+      margin: 0.9em 0;
+      padding: 0.6em 1.2em;
       color: $muted-color;
-      border-left: 4px solid #409eff;
-      background: rgba(64, 158, 255, 0.08);
-      border-radius: 0 4px 4px 0;
+      border-left: 4px solid #3b82f6;
+      background: linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%);
+      border-radius: 0 6px 6px 0;
     }
 
     :deep(code:not(.hljs)) {
       font-family: Consolas, Monaco, monospace;
-      font-size: 0.9em;
-      padding: 0.15em 0.4em;
+      font-size: 0.88em;
+      padding: 0.18em 0.45em;
       border-radius: 4px;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #e06c75;
+      background-color: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #d946ef;
     }
 
     :deep(pre.md-code-block) {
       position: relative;
-      margin: 0.8em 0;
-      padding: 12px 14px;
+      margin: 0.9em 0;
+      padding: 14px 16px;
       background-color: $code-bg;
-      border: 1px solid #2b2d33;
-      border-radius: 6px;
+      border-radius: 8px;
       overflow-x: auto;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 
       .code-lang {
         position: absolute;
         top: 6px;
-        right: 10px;
+        right: 12px;
         font-size: 11px;
-        color: #666;
+        color: #94a3b8;
         font-family: monospace;
         user-select: none;
       }
@@ -289,38 +294,45 @@ $code-bg: #16181d;
       code.hljs {
         font-family: Consolas, Monaco, monospace;
         font-size: 13px;
-        line-height: 1.5;
+        line-height: 1.55;
         background: transparent;
         padding: 0;
+        color: #abb2bf;
       }
     }
 
     :deep(table) {
       width: 100%;
       border-collapse: collapse;
-      margin: 0.8em 0;
-      font-size: 13px;
+      margin: 0.9em 0;
+      font-size: 13.5px;
+      border-radius: 6px;
+      overflow: hidden;
 
       th,
       td {
-        border: 1px solid #383838;
-        padding: 8px 12px;
+        border: 1px solid $border-color;
+        padding: 10px 14px;
         text-align: left;
       }
 
       th {
-        background-color: #262626;
+        background-color: #f8fafc;
         color: $heading-color;
         font-weight: 600;
       }
 
       tr:nth-child(even) {
-        background-color: rgba(255, 255, 255, 0.02);
+        background-color: #fcfdff;
+      }
+
+      tr:hover {
+        background-color: #f1f5f9;
       }
     }
 
     :deep(a) {
-      color: #409eff;
+      color: #2563eb;
       text-decoration: none;
       &:hover {
         text-decoration: underline;

@@ -30,7 +30,15 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 | **`ElevationRamp`** | **高程渐变设色** | `image`（1D 色带纹理）<br>`minimumHeight`（最低高程 `-414m` 死海）<br>`maximumHeight`（最高高程 `8777m` 珠峰） | 将当前片元的高程值线性归一化到 `[0.0, 1.0]`，作为纹理坐标去一维色带图 `image` 中采样对应颜色 |
 | **`SlopeRamp`** | **坡度渐变设色** | `image`（1D 色带纹理） | 根据顶点法向量计算地形坡度角（`[0, π/2]`，即 `0° ~ 90°`），归一化到 `[0.0, 1.0]` 后去 `image` 中采样颜色 |
 | **`AspectRamp`** | **坡向渐变设色** | `image`（1D 色带纹理） | 计算山坡朝向方位角（`0° ~ 360°`），归一化到 `[0.0, 1.0]` 后去 `image` 中采样颜色 |
-| **`ElevationContour`** | **等高线** | `spacing`（等高距，单位：米）<br>`width`（等高线宽度，单位：像素）<br>`color`（等高线颜色） | 将片元海拔对 `spacing` 取模，并利用屏幕空间偏导数 `fwidth` 检测整数倍等高面边缘，在等高线处输出指定 `color`，其余区域 `alpha = 0.0` |
+| **`ElevationContour`** | **等高线** | `spacing`（等高距，单位：米）<br>`width`（等高线宽度，单位：像素）<br>`color`（等高线颜色） | 将片元海拔对 `spacing` 取模（求余数），并利用屏幕空间偏导数 `fwidth` 检测整数倍等高面边缘，在等高线处输出指定 `color`，其余区域 `alpha = 0.0` |
+
+> **什么是“取模”？（等高线绘制原理解析）**
+> - **取模（Modulo）就是“求余数”**（对应 JS 中的 `%` 运算符，或 GLSL 着色器中的 `mod(a, b)` 函数）；当**余数为 `0`** 时，就代表**刚好能被整除**。
+> - **举例说明**：假设等高距 `spacing = 100`（每隔 100 米画一条等高线），着色器会对地形上每个像素的海拔 `height` 除以 `100` 求余数（`mod(height, 100)`）：
+>   - 海拔 **`135米`**：`135 ÷ 100` **余数为 `35`** → 不在等高线上，保持透明（`alpha = 0.0`）。
+>   - 海拔 **`200米`**：`200 ÷ 100` **余数为 `0`（刚好整除）** → 正好处于 100 米的整数倍高度上，绘制等高线颜色！
+>   - 海拔 **`300米`**：`300 ÷ 100` **余数为 `0`（刚好整除）** → 同样绘制等高线颜色！
+> - **配合 `fwidth` 控制线宽**：由于三维地形上很难有像素的海拔分毫不差等于 `200.00000` 米，着色器会结合 `fwidth`（计算相邻像素的海拔变化率），将余数接近 `0` 的那一圈像素（宽度由 `width` 决定，如 `2px`）都渲染为等高线颜色。
 
 ---
 
@@ -77,6 +85,26 @@ function getElevationContourMaterial() {
 ```
 
 - `getSlopeContourMaterial()` 和 `getAspectContourMaterial()` 完全同理，仅将底层的 `ElevationRamp` 分别替换为 `SlopeRamp` 和 `AspectRamp`。
+
+> **`components` 中 GLSL 表达式的白话拆解**
+>
+> 在 Cesium 的 Fabric 材质中，`components` 用于定义每个像素最终输出的外观属性，语法与 JavaScript 非常相似：
+> 1. **两个核心属性**：
+>    - **`diffuse`（漫反射颜色）**：决定当前像素最终显示**什么 RGB 颜色**。
+>    - **`alpha`（不透明度）**：决定当前像素**是否透明**（`0.0` 为完全透明，`1.0` 为完全不透明）。
+> 2. **`diffuse` 三元表达式解析（`条件 ? 结果A : 结果B`）**：
+>    ```glsl
+>    contourMaterial.alpha == 0.0 ? elevationRampMaterial.diffuse : contourMaterial.diffuse
+>    ```
+>    显卡在绘制地表每一个像素点时，都会执行这句判断：
+>    - **问**：`contourMaterial.alpha == 0.0`（当前这个像素点在“等高线图层”上是不是透明的？即：**这里是不是没有等高线经过？**）
+>    - **如果是（没有等高线）**：取 `?` 后面的 `elevationRampMaterial.diffuse` → **显示高程渐变的底色**。
+>    - **如果否（正好在等高线上）**：取 `:` 后面的 `contourMaterial.diffuse` → **显示等高线的颜色（把底色盖住）**。
+> 3. **`alpha` 最大值函数解析（`max(a, b)`）**：
+>    ```glsl
+>    max(contourMaterial.alpha, elevationRampMaterial.alpha)
+>    ```
+>    相当于 JS 中的 `Math.max()`，取两个子材质不透明度的较大值（因为渐变底色不透明度恒为 `1.0`，最终结果恒为 `1.0`，保证地表完全不透明）。
 
 ---
 

@@ -1,5 +1,5 @@
 <template>
-  <demo-box :extra-files="['./README.md']">
+  <demo-box>
     <div ref="containerRef" class="cesium-page-container"></div>
   </demo-box>
 </template>
