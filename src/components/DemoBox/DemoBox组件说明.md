@@ -8,8 +8,9 @@
 
 | 组件 | 路径 | 角色定位 | 核心职责 |
 | :--- | :--- | :--- | :--- |
-| **`DemoBox`** | `src/components/DemoBox/index.vue` | **Data Provider & 布局容器** | 已全局注册。负责自动推导并加载当前路由主界面 `index.vue` 源码、按需加载显式指定的附加文件、管理水平/垂直分栏布局，并通过 `provide` / `slot` / `props` 分发代码块数据。 |
-| **`CodeBox`** | `src/components/CodeBox/index.vue` | **Consumer & 展示组件** | 负责单文件 Mac 风格状态栏、行号同步滚动、`highlight.js` 语法高亮与一键复制。 |
+| **`DemoBox`** | `src/components/DemoBox/index.vue` | **Data Provider & 布局容器** | 已全局注册。负责自动推导并加载当前路由主界面 `index.vue` 源码、按需加载显式指定的附加文件、管理水平/垂直分栏布局，并自动判断文件类型切换渲染 `CodeBox` 或 `MarkdownBox`。 |
+| **`CodeBox`** | `src/components/CodeBox/index.vue` | **Consumer & 代码高亮组件** | 负责单文件 Mac 风格状态栏、行号同步滚动、`highlight.js` 语法高亮与一键复制。 |
+| **`MarkdownBox`** | `src/components/MarkdownBox/index.vue` | **Consumer & Markdown 渲染组件** | 当指定的文件为 `.md`（或 `language: 'markdown'`）时自动启用，基于 `marked` + `highlight.js` 渲染暗色主题的富文本文档、表格与高亮代码块。 |
 
 ---
 

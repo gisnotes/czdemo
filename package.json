@@ -31,6 +31,7 @@
     "js-cookie": "3.0.5",
     "jsencrypt": "3.3.2",
     "lil-gui": "^0.21.0",
+    "marked": "^18.1.2",
     "nprogress": "0.2.0",
     "pinia": "3.0.4",
     "pnpm": "^10.34.9",

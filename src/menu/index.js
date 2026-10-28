@@ -33,6 +33,34 @@ export const menuRoutes = [
         }
       }
     ]
+  },
+  {
+    name: 'Material',
+    path: '/material',
+    hidden: false,
+    redirect: 'noRedirect',
+    component: 'Layout',
+    alwaysShow: true,
+    meta: {
+      title: '材质与纹理',
+      icon: 'color',
+      noCache: false,
+      link: null
+    },
+    children: [
+      {
+        name: 'GlobeMaterial',
+        path: 'globe-material',
+        hidden: false,
+        component: 'cesium/material/globe-material/index',
+        meta: {
+          title: '地球材质（官）',
+          icon: 'build',
+          noCache: false,
+          link: null
+        }
+      }
+    ]
   }
 ]
 

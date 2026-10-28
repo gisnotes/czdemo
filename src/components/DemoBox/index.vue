@@ -8,22 +8,26 @@
         </div>
       </el-splitter-panel>
 
-      <!-- 右侧代码展示区域 (30%)：内聚原 CodeBlockGroup 逻辑 -->
+      <!-- 右侧代码/文档展示区域 (30%)：自动识别代码块或 Markdown 文档 -->
       <el-splitter-panel :size="30" :min="minWidth">
-        <!-- 只有一个代码块时，直接占满右侧区域 -->
-        <CodeBox
+        <!-- 只有一个展示块时，直接占满右侧区域 -->
+        <component
           v-if="resolvedBlocks.length === 1"
+          :is="getViewerComponent(resolvedBlocks[0])"
           v-bind="resolvedBlocks[0]"
         />
 
-        <!-- 多个代码块时垂直平铺分割：主界面占 75%，其余代码块平分剩余 25% -->
+        <!-- 多个展示块时垂直平铺分割：主界面占 55%（若含文档）或 75%，其余平分剩余空间 -->
         <el-splitter
           v-else-if="resolvedBlocks.length > 1"
           layout="vertical"
           class="code-vertical-splitter"
         >
-          <el-splitter-panel :size="75" :min="10">
-            <CodeBox v-bind="resolvedBlocks[0]" />
+          <el-splitter-panel :size="primarySize" :min="10">
+            <component
+              :is="getViewerComponent(resolvedBlocks[0])"
+              v-bind="resolvedBlocks[0]"
+            />
           </el-splitter-panel>
 
           <el-splitter-panel
@@ -32,7 +36,7 @@
             :size="restSize"
             :min="5"
           >
-            <CodeBox v-bind="block" />
+            <component :is="getViewerComponent(block)" v-bind="block" />
           </el-splitter-panel>
         </el-splitter>
       </el-splitter-panel>
@@ -42,6 +46,7 @@
 
 <script setup name="DemoBox">
 import CodeBox from "@/components/CodeBox/index.vue";
+import MarkdownBox from "@/components/MarkdownBox/index.vue";
 
 // 预加载所有 Cesium 示例视图及公共工具源码（Data Provider 数据源）
 const rawModules = import.meta.glob(
@@ -54,7 +59,7 @@ const rawModules = import.meta.glob(
 );
 
 const props = defineProps({
-  // 额外需要展示的文件路径列表（如 ['@/utils/cesium.js', '@/utils/gui.js', './shader.js']）
+  // 额外需要展示的文件路径列表（如 ['./README.md', '@/utils/cesium.js', '@/utils/gui.js']）
   extraFiles: {
     type: Array,
     default: () => [],
@@ -83,7 +88,24 @@ function registerCodeBlock(block) {
 }
 
 /**
- * 根据文件后缀自动推导 highlight.js 语言类型
+ * 判断某个块是否为 Markdown 文档，自动返回 MarkdownBox 或 CodeBox 组件
+ */
+function isMarkdownBlock(block) {
+  if (!block) return false;
+  return (
+    block.language === "markdown" ||
+    block.language === "md" ||
+    (typeof block.fileName === "string" &&
+      block.fileName.toLowerCase().endsWith(".md"))
+  );
+}
+
+function getViewerComponent(block) {
+  return isMarkdownBlock(block) ? MarkdownBox : CodeBox;
+}
+
+/**
+ * 根据文件后缀自动推导语言类型
  */
 function inferLanguage(filePath = "") {
   const ext = filePath.split(".").pop()?.toLowerCase();
@@ -143,9 +165,11 @@ function resolveSourceByPath(rawPath, customLang) {
   if (rawPath.startsWith("@/")) {
     moduleKey = `/src/${rawPath.slice(2)}`;
     displayPath = rawPath;
-  } else if (rawPath.startsWith("/src/")) {
+  } else if (rawPath.startsWith("/src/") || rawPath.startsWith("/docs/")) {
     moduleKey = rawPath;
-    displayPath = `@/${rawPath.slice(5)}`;
+    displayPath = rawPath.startsWith("/src/")
+      ? `@/${rawPath.slice(5)}`
+      : rawPath;
   } else if (rawPath.startsWith("./")) {
     const baseDir = currentComponentPath.value
       .split("/")
@@ -159,7 +183,7 @@ function resolveSourceByPath(rawPath, customLang) {
     displayPath = `@/views/${normalized}`;
   }
 
-  // 若未带扩展名，依次尝试补全 .vue 或 .js
+  // 若未带扩展名，依次尝试补全 .vue、.js 或 .md
   if (!rawModules[moduleKey]) {
     if (rawModules[`${moduleKey}.vue`]) {
       moduleKey = `${moduleKey}.vue`;
@@ -167,6 +191,9 @@ function resolveSourceByPath(rawPath, customLang) {
     } else if (rawModules[`${moduleKey}.js`]) {
       moduleKey = `${moduleKey}.js`;
       displayPath = `${displayPath}.js`;
+    } else if (rawModules[`${moduleKey}.md`]) {
+      moduleKey = `${moduleKey}.md`;
+      displayPath = `${displayPath}.md`;
     }
   }
 
@@ -181,7 +208,7 @@ function resolveSourceByPath(rawPath, customLang) {
 }
 
 /**
- * 最终聚合生成的代码块列表（默认仅加载主界面 index.vue，其余文件均需显式指定）
+ * 最终聚合生成的代码/文档块列表（默认仅加载主界面 index.vue，其余文件均需显式指定）
  */
 const resolvedBlocks = computed(() => {
   if (props.codeBlocks && props.codeBlocks.length > 0) {
@@ -201,7 +228,7 @@ const resolvedBlocks = computed(() => {
     list.push(mainBlock);
   }
 
-  // 2. 页面通过 extraFiles 属性显式指定的其他关联文件
+  // 2. 页面通过 extraFiles 属性显式指定的其他关联文件（支持 .md、.js、.vue 等）
   props.extraFiles.forEach((item) => {
     const block = normalizeFileEntry(item);
     if (block && !list.some((b) => b.fileName === block.fileName)) {
@@ -209,7 +236,7 @@ const resolvedBlocks = computed(() => {
     }
   });
 
-  // 3. 通过 provide/inject 动态注册的附加代码块
+  // 3. 通过 provide/inject 动态注册的附加块
   injectedBlocks.value.forEach((item) => {
     const block = normalizeFileEntry(item);
     if (block && !list.some((b) => b.fileName === block.fileName)) {
@@ -222,9 +249,17 @@ const resolvedBlocks = computed(() => {
 
 const restBlocks = computed(() => resolvedBlocks.value.slice(1));
 
+// 若包含 Markdown 说明文档，默认上下 50% / 50% 对半展示更便于阅读文档；否则 75% / 25%
+const hasMarkdownInRest = computed(() =>
+  restBlocks.value.some((block) => isMarkdownBlock(block))
+);
+
+const primarySize = computed(() => (hasMarkdownInRest.value ? 50 : 75));
+
 const restSize = computed(() => {
   const count = restBlocks.value.length;
-  return count > 0 ? 25 / count : 25;
+  const remaining = 100 - primarySize.value;
+  return count > 0 ? remaining / count : remaining;
 });
 
 // 向后代组件提供上下文数据与注册方法（Data Provider Pattern）
