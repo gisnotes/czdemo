@@ -186,3 +186,13 @@ aside {
   height: calc(100vh - 84px);
   overflow: hidden;
 }
+
+
+.demo-box .cesium-page-container {
+  height: 100%;
+}
+
+// 全局隐藏 Cesium 底部版权与 Logo 信息
+.cesium-viewer-bottom {
+  display: none !important;
+}

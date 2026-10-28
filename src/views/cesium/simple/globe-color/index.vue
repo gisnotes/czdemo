@@ -1,5 +1,7 @@
 <template>
-  <div ref="containerRef" class="cesium-page-container"></div>
+  <demo-box>
+    <div ref="containerRef" class="cesium-page-container"></div>
+  </demo-box>
 </template>
 
 <script setup name="GlobeColor">
@@ -19,6 +21,10 @@ const params = {
 };
 
 onMounted(() => {
+  init();
+});
+
+function init() {
   if (!containerRef.value) return;
 
   // 1. 初始化 Cesium Viewer 并优化渲染画质
@@ -29,15 +35,8 @@ onMounted(() => {
   viewer.scene.globe.depthTestAgainstTerrain = false;
   viewer.scene.skyAtmosphere.show = false;
 
-  const baseImageryLayer = viewer.scene.globe.imageryLayers.get(0);
-  if (baseImageryLayer) {
-    baseImageryLayer.alpha = params.imageryAlpha;
-  }
-
-  // 默认改为绿色
-  viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString(
-    params.baseColor
-  );
+  viewer.scene.globe.imageryLayers.get(0).alpha = 0.0;
+  viewer.scene.globe.baseColor = new Cesium.Color(0, 1, 0, 0); // 默认为蓝色，这里改成绿色
 
   // 3. 创建自定义 lil-gui 面板辅助调节地球颜色
   gui = createGUI({
@@ -49,7 +48,8 @@ onMounted(() => {
     .addColor(params, "baseColor")
     .name("地球底色 (baseColor)")
     .onChange((val) => {
-      viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString(val);
+      viewer.scene.globe.baseColor =
+        Cesium.Color.fromCssColorString(val).withAlpha(0);
     });
 
   gui
@@ -61,7 +61,7 @@ onMounted(() => {
         layer.alpha = val;
       }
     });
-});
+}
 
 onBeforeUnmount(() => {
   if (gui) {
@@ -75,6 +75,3 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped lang="scss">
-@import "@/assets/styles/cesium.scss";
-</style>

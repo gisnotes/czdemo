@@ -70,6 +70,7 @@ function filterAsyncRouter(asyncRouterMap, lastRouter = false, type = false) {
       } else if (route.component === 'InnerLink') {
         route.component = InnerLink
       } else {
+        if (route.meta) route.meta.componentPath = route.component;
         route.component = loadView(route.component)
       }
     }
