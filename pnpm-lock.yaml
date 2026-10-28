@@ -59,6 +59,9 @@ importers:
       pinia:
         specifier: 3.0.4
         version: 3.0.4(vue@3.5.26)
+      pnpm:
+        specifier: ^10.34.9
+        version: 10.34.9
       sortablejs:
         specifier: 1.15.6
         version: 1.15.6
@@ -1960,6 +1963,11 @@ packages:
 
   pkg-types@2.4.0:
     resolution: {integrity: sha512-07Fys7iVx0X6TcviMOgogM1Lk33ZyqOezMnU79S+kffWqwolG/5W9V8EgQSeYCIfFTYVgssRbnH630Oa2+soBA==}
+
+  pnpm@10.34.9:
+    resolution: {integrity: sha512-9JtajqD97bRLs8DB1ldQkqU8KVDZW3rRXfEfF5dId6LeOgHAfpNOmyjOcW5RwJqUlixzBtCb4uHksYqMh2L9Mg==}
+    engines: {node: '>=18.12'}
+    hasBin: true
 
   posix-character-classes@0.1.1:
     resolution: {integrity: sha512-xTgYBc3fuo7Yt7JbiuFxSYGToMoz8fLoE6TC9Wx1P/u+LfeThMOAqmuyECnlBaaJb+u1m9hHiXUEtwW4OzfUJg==}
@@ -4583,6 +4591,8 @@ snapshots:
       confbox: 0.3.1
       exsolve: 1.1.3
       pathe: 2.0.3
+
+  pnpm@10.34.9: {}
 
   posix-character-classes@0.1.1: {}
 

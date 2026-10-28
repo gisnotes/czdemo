@@ -45,7 +45,7 @@ export default defineConfig(({ mode, command }) => {
     server: {
       port: 6688,
       host: true,
-      open: true,
+      open: false,
       proxy: {
         // https://cn.vitejs.dev/config/#server-proxy
         '/dev-api': {
