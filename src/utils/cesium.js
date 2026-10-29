@@ -2,6 +2,17 @@ import Cesium from "cesium";
 import worldImageUrl from "@/assets/images/worldimage.jpg";
 
 /**
+ * Cesium Ion 默认访问密钥
+ * 这是官方随源码分发的评估用 token（aud 里标注了会在 2026-12-01 被删除/失效），只适合试用；
+ * 到期后可在此处手动更新，或前往 https://ion.cesium.com/tokens 申请自己的 token 替换。
+ */
+export const defaultAccessToken =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6Im01MDBjRTVZclBWTmwycGsiLCJqdGkiOiI3NGFjZmI5MS01MDAwLTQwZTktOTlkMC01OTJkN2E2MmQ5OTgiLCJpZCI6MjU5LCJzdWIiOiJDZXNpdW1KUyIsImlzcyI6Imh0dHBzOi8vYXBpLmNlc2l1bS5jb20iLCJhdWQiOiIxLjE0NiBSZWxlYXNlIC0gRGVsZXRlIG9uIERlY2VtYmVyIDEsIDIwMjYiLCJpYXQiOjE3OTAzMTMyMTJ9.4CskcFdVNW5VgLW2iBnYt2GIW2Yl9Q5u6T8gSRK4rkU";
+
+// 全局设置 Cesium Ion 默认 Token
+Cesium.Ion.defaultAccessToken = defaultAccessToken;
+
+/**
  * 默认的 Cesium Viewer 基础配置
  */
 export const DEFAULT_VIEWER_OPTIONS = {

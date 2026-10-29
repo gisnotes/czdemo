@@ -182,3 +182,78 @@ const contourColor = Cesium.Color.RED.clone();
    Cesium 为了避免高频交互时频繁 `new Cesium.Color()` 产生垃圾回收（GC）开销，设计了第二个参数 `result`，将计算出的新通道值直接写入 `contourColor` 实例内部：
    - **如果不调用 `.clone()`**：`contourColor` 指向被冻结的只读对象，执行 `fromRandom(..., contourColor)` 修改属性时会直接报错：`TypeError: Cannot assign to read only property 'red' of object`。
    - **调用 `.clone()` 后**：创建一个**全新的、可变的（Mutable）`Color` 实例**，既能安全地复用同一个对象引用（让 `contourUniforms.color` 自动感知内部值变化），又不会污染全局常量。
+
+---
+
+## 七、 从 `init()` 入口梳理整体实现思路
+
+从 `index.vue` 的 `init()` 函数出发，整个示例的执行与交互链路分为 **3 个核心步骤**：
+
+```mermaid
+flowchart TD
+    Init["init() 入口 (L286)"] --> Step1["1. 初始化 Viewer 与地形法线 (L290-295)"]
+    Init --> Step2["2. 初始化材质与相机视角 (L298-299)"]
+    Init --> Step3["3. 构建 GUI 面板与响应式联动 (L302-377)"]
+
+    Step2 --> UpdateMat["updateMaterial() 组装材质 (L218)"]
+    Step2 --> FlyTo["flyToPreset() 切换视角与时间 (L270)"]
+
+    UpdateMat --> Branch{"enableContour 是否开启等高线?"}
+    Branch -- "true (叠加模式)" --> Composite["创建 Fabric 复合材质\n或纯等高线材质 (L225-246)"]
+    Branch -- "false (单一模式)" --> Single["Cesium.Material.fromType()\n创建单一材质 (L247-258)"]
+    Composite --> ColorRamp["getColorRamp() 生成 100×1 Canvas 色带 (L260-262)"]
+    Single --> ColorRamp
+    ColorRamp --> Mount["挂载到 globe.material (L264)"]
+```
+
+### 第一步：初始化带“顶点法线”的地形地球
+
+```js
+viewer = createViewer(containerRef.value, {
+  terrain: Cesium.Terrain.fromWorldTerrain({
+    requestVertexNormals: true,
+  }),
+});
+optimizeViewerQuality(viewer);
+```
+
+- **核心点**：除了加载全球地形外，显式传入了 `requestVertexNormals: true`。
+- **原因**：虽然默认的“高程设色 (`elevation`)”只需要海拔高度，但用户在面板里随时会切换到“坡度 (`slope`)”或“坡向 (`aspect`)”，后两者在 GPU 着色器中必须依赖每个地形网格顶点的**三维法向量**才能算出山坡倾角和朝向，因此在初始化地形时就要一并向地形服务请求法线数据。
+
+### 第二步：首次挂载材质并定位默认视角
+
+```js
+updateMaterial();
+flyToPreset(viewModel.location);
+```
+
+#### 1. `updateMaterial()` —— 材质组装的核心状态机
+地球表面材质由两个开关共同决定：**是否开启等高线 (`enableContour`)** × **4 种底色模式 (`selectedShading`: `elevation` / `slope` / `aspect` / `none`)**，一共 **8 种组合**：
+
+1. **分支 A：未开启等高线（`hasContour === false`）**
+   - 直接调用 `Cesium.Material.fromType(...)` 创建 Cesium 内置的单一材质（`ElevationRamp`、`SlopeRamp` 或 `AspectRamp`）。
+   - 如果选的是 `"none"`（无着色），`material` 保持为 `undefined`，最后赋值给 `globe.material` 时就会恢复地球原本的卫星影像底图。
+   - 同时把 `material.uniforms` 的引用保存在外部变量 `shadingUniforms` 中。
+2. **分支 B：开启了等高线（`hasContour === true`）**
+   - 当底色是高程/坡度/坡向时，需要把**底色渐变**和**等高线**两层合二为一，因此分别调用 `getElevationContourMaterial()`、`getSlopeContourMaterial()` 或 `getAspectContourMaterial()` 构造 **Fabric 复合材质**。
+   - 复合材质内部有两套子材质，代码将它们的 `uniforms` 分别提取到模块级变量 `shadingUniforms`（控制底色色带）和 `contourUniforms`（控制等高线线宽、间距、颜色）。
+   - 如果底色选了 `"none"` 但开了等高线，则只创建单一的 `ElevationContour` 材质，让等高线直接画在卫星影像上。
+3. **生成 `100 × 1` 色带画布**
+   - 只要底色不是 `"none"`，就调用 `getColorRamp(selectedShading)` 在内存中创建一个宽 100 像素、高 1 像素的 `<canvas>`，按照对应模式的 7 个百分比断点（`elevationRamp` / `slopeRamp` / `aspectRamp`）填入黑→蓝→粉→红→橙→黄→白渐变，并赋给 `shadingUniforms.image` 供 GPU 采样。
+4. **挂载生效**：`globe.material = material`。
+
+#### 2. `flyToPreset(viewModel.location)` —— 视角与光照时间同步
+- 默认读取 `viewModel.location`（`"himalayas"`），从 `PRESET_VIEWS` 配置表中取出喜马拉雅山脉的坐标与相机朝向，调用 `viewer.camera.setView` 瞬移过去，并同步设置当时的太阳光照时间 `clockViewModel.currentTime`。
+
+### 第三步：构建 GUI 面板与“两级更新”性能设计
+
+在绑定 `lil-gui` 控件的 `onChange` 回调时，代码做了一个很重要的**两级更新区分**：
+
+1. **结构级切换 → 调用 `updateMaterial()` 重建材质**
+   - 当切换**地表着色模式**或切换**启用等高线复选框**时，底层使用的 GLSL 着色器类型发生了变化（比如从单材质变成复合材质），因此必须重新执行 `updateMaterial()` 生成新的 `Cesium.Material` 实例。
+2. **参数级微调 → 直接修改 `contourUniforms` 属性引用（不重建材质）**
+   - 当用户高频拖动**等高距滑块**、**等高线宽滑块**、**颜色选择器**或点击**随机颜色**时，**不会**调用 `updateMaterial()`。
+   - 而是直接修改之前保存好的 `contourUniforms.spacing`、`contourUniforms.width`、`contourUniforms.color`。这样避免了拖动滑块时反复销毁和重编译 WebGL Shader，保证滑动过程丝滑不掉帧。
+3. **控件禁用态联动（`syncContourCtrlState`）**
+   - 当 `enableContour` 为 `false` 时，自动调用 `ctrl.disable(true)` 将等高距、线宽、颜色、随机颜色这 4 个子控件置灰禁用；勾选启用后再解除禁用。
+

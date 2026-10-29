@@ -1,43 +1,19 @@
 <template>
   <div class="markdown-box">
-    <!-- 顶部状态栏 -->
-    <div class="mac-header">
-      <div class="dots">
-        <span class="mac-dot red"></span>
-        <span class="mac-dot yellow"></span>
-        <span class="mac-dot green"></span>
-      </div>
-      <span class="file-name" v-if="fileName">{{ fileName }}</span>
-      <div class="header-actions">
-        <el-button
-          v-if="isSupported"
-          :type="copied ? 'success' : 'primary'"
-          link
-          @click="copy(rawCode)"
-        >
-          <template #icon>
-            <el-icon>
-              <Check v-if="copied" />
-              <CopyDocument v-else />
-            </el-icon>
-          </template>
-          {{ copied ? "已复制" : "复制" }}
-        </el-button>
-      </div>
-    </div>
-
     <!-- Markdown 富文本渲染区域 -->
     <div class="markdown-scroll-area">
-      <div class="markdown-body" v-html="renderedHtml"></div>
+      <div ref="markdownBodyRef" class="markdown-body" v-html="renderedHtml"></div>
     </div>
   </div>
 </template>
 
 <script setup name="MarkdownBox">
 import { Marked } from "marked";
+import markedKatex from "marked-katex-extension";
+import "katex/dist/katex.min.css";
 import hljs from "highlight.js";
-import "highlight.js/styles/atom-one-dark.css";
-import { useClipboard } from "@vueuse/core";
+import "highlight.js/styles/atom-one-light.css";
+import mermaid from "mermaid";
 
 const props = defineProps({
   fileName: { type: String, default: "README.md" },
@@ -45,14 +21,28 @@ const props = defineProps({
   language: { type: String, default: "markdown" },
 });
 
-const { copy, copied, isSupported } = useClipboard({ legacy: true });
+const markdownBodyRef = ref(null);
 
-// 配置独立 Marked 实例并接入 highlight.js 代码块高亮
+mermaid.initialize({
+  startOnLoad: false,
+  theme: "default",
+  securityLevel: "loose",
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true,
+    curve: "basis",
+  },
+});
+
+// 配置独立 Marked 实例并接入 highlight.js 代码块高亮与 mermaid 流程图
 const markedInstance = new Marked({
   gfm: true,
   breaks: true,
   renderer: {
     code({ text, lang }) {
+      if (lang === "mermaid") {
+        return `<div class="mermaid-container" data-code="${encodeURIComponent(text)}"></div>`;
+      }
       const validLang = lang && hljs.getLanguage(lang) ? lang : "";
       let highlighted = text;
       try {
@@ -69,6 +59,13 @@ const markedInstance = new Marked({
     },
   },
 });
+
+markedInstance.use(
+  markedKatex({
+    throwOnError: false,
+    nonStandard: true,
+  })
+);
 
 /**
  * 修正 CommonMark 在中文环境下当 ** 紧贴中文标点（如 （）、“”、``）与汉字时无法识别加粗的问题
@@ -95,15 +92,65 @@ const renderedHtml = computed(() => {
     return `<pre>${props.rawCode}</pre>`;
   }
 });
+
+let mermaidCounter = 0;
+let resizeObserver = null;
+
+async function renderMermaidDiagrams() {
+  const container = markdownBodyRef.value;
+  if (!container || container.clientWidth === 0) return;
+
+  const nodes = container.querySelectorAll(
+    ".mermaid-container:not([data-rendered='true'])"
+  );
+  for (const node of nodes) {
+    const code = decodeURIComponent(node.getAttribute("data-code") || "");
+    if (!code.trim()) continue;
+    try {
+      const id = `mermaid-svg-${Date.now()}-${++mermaidCounter}`;
+      const { svg } = await mermaid.render(id, code);
+      node.innerHTML = svg;
+      node.setAttribute("data-rendered", "true");
+    } catch (err) {
+      node.innerHTML = `<pre class="md-code-block"><code class="hljs">${code}</code></pre>`;
+      node.setAttribute("data-rendered", "true");
+    }
+  }
+}
+
+watch(
+  renderedHtml,
+  () => {
+    nextTick(() => {
+      renderMermaidDiagrams();
+    });
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  if (markdownBodyRef.value && typeof ResizeObserver !== "undefined") {
+    resizeObserver = new ResizeObserver(() => {
+      renderMermaidDiagrams();
+    });
+    resizeObserver.observe(markdownBodyRef.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+});
 </script>
 
 <style scoped lang="scss">
-$header-bg: #f1f5f9;
 $border-color: #e2e8f0;
 $text-color: #334155;
 $heading-color: #0f172a;
 $muted-color: #475569;
-$code-bg: #1e222a;
+$code-bg: #f8fafc;
 
 .markdown-box {
   height: 100%;
@@ -126,58 +173,6 @@ $code-bg: #1e222a;
     border-radius: 4px;
     &:hover {
       background: #94a3b8;
-    }
-  }
-
-  .mac-header {
-    height: 36px;
-    flex-shrink: 0;
-    background: $header-bg;
-    border-bottom: 1px solid $border-color;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    z-index: 10;
-    position: relative;
-
-    .dots {
-      display: flex;
-      align-items: center;
-
-      .mac-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 8px;
-
-        &.red {
-          background: #ff5f56;
-        }
-        &.yellow {
-          background: #ffbd2e;
-        }
-        &.green {
-          background: #27c93f;
-        }
-      }
-    }
-
-    .file-name {
-      flex: 1;
-      margin-left: 6px;
-      color: #64748b;
-      font-size: 12px;
-      font-family: Consolas, Monaco, monospace;
-    }
-
-    .header-actions {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: 0;
-      padding: 0 12px;
-      z-index: 10;
     }
   }
 
@@ -262,8 +257,18 @@ $code-bg: #1e222a;
       border-radius: 0 6px 6px 0;
     }
 
+    :deep(.katex) {
+      font-size: 1.05em;
+    }
+
+    :deep(.katex-display) {
+      margin: 1em 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
     :deep(code:not(.hljs)) {
-      font-family: Consolas, Monaco, monospace;
+      font-family: "Maple Mono Normal NF CN", "Maple Mono CN", "Maple Mono", "JetBrains Mono", Consolas, Monaco, monospace;
       font-size: 0.88em;
       padding: 0.18em 0.45em;
       border-radius: 4px;
@@ -275,11 +280,11 @@ $code-bg: #1e222a;
     :deep(pre.md-code-block) {
       position: relative;
       margin: 0.9em 0;
-      padding: 14px 16px;
+      padding: 14px 18px;
       background-color: $code-bg;
+      border: 1px solid $border-color;
       border-radius: 8px;
       overflow-x: auto;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 
       .code-lang {
         position: absolute;
@@ -287,17 +292,33 @@ $code-bg: #1e222a;
         right: 12px;
         font-size: 11px;
         color: #94a3b8;
-        font-family: monospace;
+        font-family: "Maple Mono Normal NF CN", "Maple Mono CN", "Maple Mono", "JetBrains Mono", monospace;
         user-select: none;
       }
 
       code.hljs {
-        font-family: Consolas, Monaco, monospace;
+        font-family: "Maple Mono Normal NF CN", "Maple Mono CN", "Maple Mono", "JetBrains Mono", Consolas, Monaco, monospace;
         font-size: 13px;
-        line-height: 1.55;
+        line-height: 1.6;
         background: transparent;
         padding: 0;
-        color: #abb2bf;
+        color: #383a42;
+      }
+    }
+
+    :deep(.mermaid-container) {
+      margin: 1em 0;
+      padding: 18px 16px;
+      background: #f8fafc;
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+
+      svg {
+        max-width: 100%;
+        height: auto;
       }
     }
 

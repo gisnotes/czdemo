@@ -70,7 +70,9 @@
       width: 100% !important;
     }
 
-    .el-menu-item, .menu-title {
+    .el-menu-item, .el-sub-menu__title, .menu-title {
+      font-size: 13px !important;
+      letter-spacing: -0.2px;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
@@ -97,6 +99,7 @@
     & .nest-menu .el-sub-menu>.el-sub-menu__title,
     & .el-sub-menu .el-menu-item {
       min-width: vars.$base-sidebar-width !important;
+      padding-left: 36px !important;
 
       &:hover {
         background-color: rgba(0, 0, 0, 0.06);

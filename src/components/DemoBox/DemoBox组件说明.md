@@ -65,10 +65,11 @@ onBeforeUnmount(() => {
 
 ---
 
-### 场景二：在【代码】标签页中指定额外代码文件（`extra-files`）
+### 场景二：在【示例代码】标签页中指定额外代码文件或按需提取部分方法（`extra-files`）
 
-如果当前示例除了主界面 `index.vue` 之外，还希望在【代码】标签页中一并展示公共工具类（如 `@/utils/cesium.js`、`@/utils/gui.js`）或同级子模块（如 `./customShader.js`），通过 `extra-files` 传入路径数组即可（【代码】标签页顶部会自动生成 VS Code 风格的水平文件标签栏，点击可依次切换查看各个文件源码）：
+如果当前示例除了主界面 `index.vue` 之外，还希望在【示例代码】标签页中一并展示公共工具类（如 `@/utils/cesium.js`、`@/utils/gui.js`）或同级子模块（如 `./customShader.js`），通过 `extra-files` 传入即可（顶部会自动生成水平文件标签栏，点击可依次切换查看）：
 
+#### 1. 加载完整工具文件
 ```vue
 <template>
   <demo-box :extra-files="['@/utils/cesium.js', '@/utils/gui.js']">
@@ -76,6 +77,36 @@ onBeforeUnmount(() => {
   </demo-box>
 </template>
 ```
+
+#### 2. 只提取 JS 工具类中的指定方法/类/常量（自动连带提取上方 JSDoc 注释）
+当某个公共 JS 工具类体积较大、而当前示例只用到了其中几个方法时，支持以下两种写法按需提取：
+
+- **方式 A：对象配置写法（推荐，`pick` 或 `methods` 数组）**
+  ```vue
+  <template>
+    <demo-box
+      :extra-files="[
+        {
+          file: '@/utils/cesium.js',
+          pick: ['createViewer', 'optimizeViewerQuality'],
+        },
+      ]"
+    >
+      <div ref="containerRef" class="cesium-page-container"></div>
+    </demo-box>
+  </template>
+  ```
+
+- **方式 B：字符串 `#` 锚点简写（多个方法名用英文逗号分隔）**
+  ```vue
+  <template>
+    <demo-box
+      :extra-files="['@/utils/cesium.js#createViewer,optimizeViewerQuality']"
+    >
+      <div ref="containerRef" class="cesium-page-container"></div>
+    </demo-box>
+  </template>
+  ```
 
 ---
 

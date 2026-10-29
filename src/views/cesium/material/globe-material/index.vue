@@ -1,5 +1,12 @@
 <template>
-  <demo-box>
+  <demo-box
+    :extra-files="[
+      {
+        file: '@/utils/cesium.js',
+        pick: ['createViewer', 'optimizeViewerQuality'],
+      },
+    ]"
+  >
     <div ref="containerRef" class="cesium-page-container"></div>
   </demo-box>
 </template>
@@ -198,13 +205,13 @@ function getColorRamp(selectedShading) {
   }
 
   const grd = ctx.createLinearGradient(0, 0, 100, 0);
-  grd.addColorStop(values[0], "#000000"); // black
-  grd.addColorStop(values[1], "#2747E0"); // blue
-  grd.addColorStop(values[2], "#D33B7D"); // pink
-  grd.addColorStop(values[3], "#D33038"); // red
-  grd.addColorStop(values[4], "#FF9742"); // orange
-  grd.addColorStop(values[5], "#ffd700"); // yellow
-  grd.addColorStop(values[6], "#ffffff"); // white
+  grd.addColorStop(values[0], "#000000"); // 黑色
+  grd.addColorStop(values[1], "#2747E0"); // 蓝色
+  grd.addColorStop(values[2], "#D33B7D"); // 粉色
+  grd.addColorStop(values[3], "#D33038"); // 红色
+  grd.addColorStop(values[4], "#FF9742"); // 橙色
+  grd.addColorStop(values[5], "#ffd700"); // 黄色
+  grd.addColorStop(values[6], "#ffffff"); // 白色
 
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, 100, 1);

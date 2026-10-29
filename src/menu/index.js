@@ -61,6 +61,34 @@ export const menuRoutes = [
         }
       }
     ]
+  },
+  {
+    name: 'GaussianSplatting',
+    path: '/gaussian-splatting',
+    hidden: false,
+    redirect: 'noRedirect',
+    component: 'Layout',
+    alwaysShow: true,
+    meta: {
+      title: '高斯泼溅',
+      icon: 'component',
+      noCache: false,
+      link: null
+    },
+    children: [
+      {
+        name: 'ITwinGaussianSplats',
+        path: 'itwin-gaussian-splats',
+        hidden: false,
+        component: 'cesium/gaussian-splatting/itwin-gaussian-splats/index',
+        meta: {
+          title: 'iTwin 高斯泼溅（官）',
+          icon: 'eye-open',
+          noCache: false,
+          link: null
+        }
+      }
+    ]
   }
 ]
 

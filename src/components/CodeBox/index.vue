@@ -49,7 +49,7 @@
 
 <script setup>
 import hljs from "highlight.js";
-import "highlight.js/styles/atom-one-dark.css";
+import "highlight.js/styles/atom-one-light.css";
 import { useClipboard } from "@vueuse/core";
 
 const props = defineProps({
@@ -89,10 +89,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-$code-bg: #1e1e1e;
-$header-bg: #2d2d2d;
-$line-num-color: #5c6370;
-$border-color: #333;
+$code-bg: #ffffff;
+$gutter-bg: #f8fafc;
+$header-bg: #f1f5f9;
+$line-num-color: #94a3b8;
+$border-color: #e2e8f0;
 
 .code-box {
   height: 100%;
@@ -100,11 +101,10 @@ $border-color: #333;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  // box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
   & ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   & ::-webkit-scrollbar-track {
@@ -112,11 +112,10 @@ $border-color: #333;
   }
 
   & ::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 5px;
-    border: 2px solid $code-bg;
+    background: #cbd5e1;
+    border-radius: 4px;
     &:hover {
-      background: #555;
+      background: #94a3b8;
     }
   }
 
@@ -125,12 +124,13 @@ $border-color: #333;
   }
 
   .mac-header {
-    height: 32px;
+    height: 36px;
     flex-shrink: 0;
     background: $header-bg;
+    border-bottom: 1px solid $border-color;
     display: flex;
     align-items: center;
-    padding: 0 15px;
+    padding: 0 16px;
     z-index: 10;
     position: relative;
 
@@ -161,10 +161,10 @@ $border-color: #333;
 
     .file-name {
       flex: 1;
-      margin-left: 5px;
-      color: #858585;
+      margin-left: 6px;
+      color: #64748b;
       font-size: 12px;
-      font-family: monospace;
+      font-family: "Maple Mono Normal NF CN", "Maple Mono CN", "Maple Mono", "JetBrains Mono", Consolas, Monaco, monospace;
     }
 
     .copy-btn {
@@ -172,7 +172,7 @@ $border-color: #333;
       top: 50%;
       transform: translateY(-50%);
       right: 0;
-      padding: 0 10px;
+      padding: 0 12px;
       z-index: 10;
       background-color: $header-bg;
     }
@@ -184,31 +184,29 @@ $border-color: #333;
     display: flex;
     overflow: hidden;
     min-height: 0;
-    /* 避免多个代码区域时，水平滚动条和分割线区域重叠的问题 */
-    padding-bottom: 10px;
+    padding-bottom: 6px;
 
     /* 行号外部容器 */
     .line-numbers-wrapper {
       flex-shrink: 0;
-      width: 46px;
+      width: 50px;
       overflow: hidden;
-      background-color: $code-bg;
+      background-color: $gutter-bg;
       border-right: 1px solid $border-color;
 
       .line-numbers-col {
-        /* 底部的padding设置的大一点，不管是否有水平滚动条，都不会出现行号和代码不在一条水平线上的情况 */
-        padding: 15px 0 30px 0;
+        padding: 16px 0 30px 0;
         display: flex;
         flex-direction: column;
         text-align: right;
         user-select: none;
 
         span {
-          padding: 0 10px;
+          padding: 0 12px;
           color: $line-num-color;
-          font-family: Consolas, Monaco, monospace;
-          font-size: 14px;
-          line-height: 1.5;
+          font-family: "Maple Mono Normal NF CN", "Maple Mono CN", "Maple Mono", "JetBrains Mono", Consolas, Monaco, monospace;
+          font-size: 13.5px;
+          line-height: 1.6;
         }
       }
     }
@@ -221,19 +219,19 @@ $border-color: #333;
 
       .code-content {
         margin: 0;
-        padding: 15px;
-        /* 确保宽度由最长行决定，触发水平滚动 */
+        padding: 16px 20px;
         width: max-content;
         min-width: 100%;
 
         :deep(code.hljs) {
-          font-family: Consolas, Monaco, monospace;
-          font-size: 14px;
-          line-height: 1.5;
+          font-family: "Maple Mono Normal NF CN", "Maple Mono CN", "Maple Mono", "JetBrains Mono", Consolas, Monaco, monospace;
+          font-size: 13.5px;
+          line-height: 1.6;
           display: block;
           background: transparent;
+          color: #383a42;
           padding: 0;
-          white-space: pre; /* 强制不换行 */
+          white-space: pre;
         }
       }
     }
