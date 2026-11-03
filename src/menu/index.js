@@ -55,6 +55,18 @@ export const menuRoutes = [
           noCache: false,
           link: null
         }
+      },
+      {
+        name: 'GroundPolyline',
+        path: 'ground-polyline',
+        hidden: false,
+        component: 'cesium/simple/ground-polyline/index',
+        meta: {
+          title: '贴地线实现方案',
+          icon: 'component',
+          noCache: false,
+          link: null
+        }
       }
     ]
   },
