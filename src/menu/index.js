@@ -31,6 +31,18 @@ export const menuRoutes = [
           noCache: false,
           link: null
         }
+      },
+      {
+        name: 'CommonIssues',
+        path: 'common-issues',
+        hidden: false,
+        component: 'cesium/simple/common-issues/index',
+        meta: {
+          title: '入门常见问题汇总',
+          icon: 'question',
+          noCache: false,
+          link: null
+        }
       }
     ]
   },
