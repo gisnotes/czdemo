@@ -109,6 +109,30 @@ export const menuRoutes = [
     },
     children: [
       {
+        name: 'MaterialGallery',
+        path: 'material-gallery',
+        hidden: false,
+        component: 'cesium/material/material-gallery/index',
+        meta: {
+          title: '常用材质一览',
+          icon: 'color',
+          noCache: false,
+          link: null
+        }
+      },
+      {
+        name: 'DynamicCanvasMaterial',
+        path: 'dynamic-canvas-material',
+        hidden: false,
+        component: 'cesium/material/dynamic-canvas-material/index',
+        meta: {
+          title: 'Canvas动态纹理(流动箭头)',
+          icon: 'guide',
+          noCache: false,
+          link: null
+        }
+      },
+      {
         name: 'GlobeMaterial',
         path: 'globe-material',
         hidden: false,
