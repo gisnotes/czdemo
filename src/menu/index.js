@@ -67,6 +67,30 @@ export const menuRoutes = [
           noCache: false,
           link: null
         }
+      },
+      {
+        name: 'TerrainBuilderDoc',
+        path: 'terrain-builder',
+        hidden: false,
+        component: 'cesium/simple/terrain-builder/index',
+        meta: {
+          title: '地形切片与发布指南',
+          icon: 'documentation',
+          noCache: false,
+          link: null
+        }
+      },
+      {
+        name: 'EagleEye',
+        path: 'eagle-eye',
+        hidden: false,
+        component: 'cesium/simple/eagle-eye/index',
+        meta: {
+          title: '鹰眼导航地图',
+          icon: 'eye-open',
+          noCache: false,
+          link: null
+        }
       }
     ]
   },
