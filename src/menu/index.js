@@ -43,6 +43,18 @@ export const menuRoutes = [
           noCache: false,
           link: null
         }
+      },
+      {
+        name: 'PolylineArcType',
+        path: 'polyline-arctype',
+        hidden: false,
+        component: 'cesium/simple/polyline-arctype/index',
+        meta: {
+          title: 'Polyline 弧段类型',
+          icon: 'guide',
+          noCache: false,
+          link: null
+        }
       }
     ]
   },

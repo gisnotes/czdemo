@@ -5,7 +5,7 @@ const useAppStore = defineStore(
   {
     state: () => ({
       sidebar: {
-        opened: Cookies.get('sidebarStatus') ? !!+Cookies.get('sidebarStatus') : true,
+        opened: Cookies.get('sidebarStatus') !== undefined ? !!+Cookies.get('sidebarStatus') : (localStorage.getItem('sidebarStatus') !== null ? !!+localStorage.getItem('sidebarStatus') : true),
         withoutAnimation: false,
         hide: false
       },
@@ -20,13 +20,13 @@ const useAppStore = defineStore(
         this.sidebar.opened = !this.sidebar.opened
         this.sidebar.withoutAnimation = withoutAnimation
         if (this.sidebar.opened) {
-          Cookies.set('sidebarStatus', 1)
+          Cookies.set('sidebarStatus', 1); localStorage.setItem('sidebarStatus', '1')
         } else {
-          Cookies.set('sidebarStatus', 0)
+          Cookies.set('sidebarStatus', 0); localStorage.setItem('sidebarStatus', '0')
         }
       },
       closeSideBar({ withoutAnimation }) {
-        Cookies.set('sidebarStatus', 0)
+        Cookies.set('sidebarStatus', 0); localStorage.setItem('sidebarStatus', '0')
         this.sidebar.opened = false
         this.sidebar.withoutAnimation = withoutAnimation
       },
